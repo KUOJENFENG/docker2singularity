@@ -1,7 +1,8 @@
 name: Build & Deploy Docker Containers
 on:
-  # Build on push to any branch
-  push: []
+  push:
+    branches: [ main ]
+  workflow_dispatch:   # allows manual "Run workflow" in Actions tab
 
 jobs:
   deploy-images:
