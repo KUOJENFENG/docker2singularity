@@ -73,6 +73,31 @@ jobs:
           ${{ env.container }}
           ${{ env.tagged }}
           # ---- NEW: generate a .sif file using the freshly built docker2singularity image ----
+    
+    - name: Load Docker image from tar
+      run: |
+        TAR_PATH="Team_UZH_2025_topbrain_segmentation_ct_mr.tar"
+
+        if [ ! -f "$TAR_PATH" ]; then
+          echo "Tar file not found at $TAR_PATH"
+          ls -l
+          exit 1
+        fi
+
+        echo "Loading image from $TAR_PATH"
+        # Capture the 'Loaded image: repo:tag' line and extract the repo:tag
+        IMAGE=$(docker load -i "$TAR_PATH" | awk '/Loaded image:/ {print $3}')
+
+        if [ -z "$IMAGE" ]; then
+          echo "Could not parse image name from docker load output"
+          echo "Current images:"
+          docker images
+          exit 1
+        fi
+
+        echo "Source image from tar: $IMAGE"
+        echo "SOURCE_IMAGE=$IMAGE" >> $GITHUB_ENV
+        
     - name: Generate Singularity .sif from test Docker image
       run: |
         mkdir -p sif-output
