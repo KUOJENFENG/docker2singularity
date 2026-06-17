@@ -72,3 +72,27 @@ jobs:
         tags: |
           ${{ env.container }}
           ${{ env.tagged }}
+          # ---- NEW: generate a .sif file using the freshly built docker2singularity image ----
+    - name: Generate Singularity .sif from test Docker image
+      run: |
+        mkdir -p sif-output
+
+        # Example source image to convert; change if you want another base image
+        SOURCE_IMAGE="ubuntu:22.04"
+
+        echo "Converting Docker image ${SOURCE_IMAGE} to Singularity .sif using ${container}"
+
+        docker run -v /var/run/docker.sock:/var/run/docker.sock \
+                   -v "${GITHUB_WORKSPACE}/sif-output:/output" \
+                   --privileged -t --rm \
+                   "${container}" \
+                   "${SOURCE_IMAGE}"
+
+        echo "Contents of sif-output/:"
+        ls -l sif-output
+
+    - name: Upload .sif image as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: singularity-sif
+        path: sif-output/*.sif
